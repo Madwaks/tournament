@@ -1,0 +1,53 @@
+version: '3.5'
+
+services:
+  postgresql:
+    container_name: postgres-tournament
+    image: bitnami/postgresql:latest
+    ports:
+      - '5432:5432'
+    env_file:
+      - postgres_env
+    volumes:
+      - 'postgres_data:/postgresql'
+      - 'postgres_conf:/postgresql/conf'
+      - 'postgres_init:/docker-entrypoint-initdb.d'
+      - 'postgres_preinit:/docker-entrypoint-preinitdb.d'
+    networks:
+      - trading-net
+  api:
+    image: api-tournament
+    container_name: api-tournament
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8000:8000'
+    env_file:
+      - docker_env
+      - postgres_env
+    networks:
+      - trading-net
+    depends_on:
+      - postgresql
+    volumes:
+      - .:/app
+
+
+volumes:
+  postgres_data:
+    name: postgres_data
+    driver: local
+  postgres_conf:
+    name: postgres_conf
+    driver: local
+  postgres_init:
+    name: postgres_init
+    driver: local
+  postgres_preinit:
+    name: postgres_preinit
+    driver: local
+
+
+networks:
+  trading-net:
